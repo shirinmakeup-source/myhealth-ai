@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#059669">
+<meta name="description" content="Personal health companion for people with diabetes: blood sugar, medication, food scanning, walking and weekly reports.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MyHealth AI">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>MyHealth AI — Diabetes Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6fbf9;--card:#ffffff;--card2:#eef7f3;--text:#12241e;--muted:#5b6f66;--line:#dcebe4;--emerald:#059669;--emerald2:#10b981;--blue:#0284c7;--blueSoft:#e0f2fe;--amber:#d97706;--red:#dc2626;--radius:18px;--shadow:0 8px 30px rgba(5,80,60,.08)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1713;--card:#13241e;--card2:#182f27;--text:#e6f2ec;--muted:#9db8ac;--line:#24443a;--blueSoft:#12344a;--shadow:0 8px 30px rgba(0,0,0,.35)}}
+html[data-theme="dark"]{--bg:#0b1713;--card:#13241e;--card2:#182f27;--text:#e6f2ec;--muted:#9db8ac;--line:#24443a;--blueSoft:#12344a}
+html[data-theme="light"]{--bg:#f6fbf9;--card:#ffffff;--card2:#eef7f3;--text:#12241e;--muted:#5b6f66;--line:#dcebe4;--blueSoft:#e0f2fe}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:"Nunito Sans",system-ui,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:"Plus Jakarta Sans",system-ui,sans-serif;line-height:1.15;margin:0}
+button,input,select,textarea{font:inherit} button,[role=button],select,input:not([type=checkbox]){min-height:44px}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 16px 110px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+.eyebrow{color:var(--emerald);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.78rem}
+.title{font-size:2rem}.sub{color:var(--muted);max-width:640px}
+.pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:var(--blueSoft);color:var(--blue);font-weight:700;font-size:.82rem}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;background:var(--emerald);color:#fff}
+.btn.secondary{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn.blue{background:var(--blue)} .btn.ghost{background:transparent;color:var(--emerald);border:1px solid var(--emerald)}
+.btn.small{min-height:38px;padding:8px 12px;font-size:.9rem} .btn.danger{background:#fee2e2;color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px} @media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)} .cols{grid-template-columns:1.2fr .8fr}}
+.cols{display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.stat b{font-size:1.7rem;font-family:"Plus Jakarta Sans"} .muted{color:var(--muted)} .small{font-size:.88rem}
+.progress{height:10px;background:var(--card2);border-radius:999px;overflow:hidden;margin-top:8px}.bar{height:100%;background:linear-gradient(90deg,var(--emerald),var(--blue));border-radius:999px}
+.hero{background:linear-gradient(135deg,#064e3b,#059669 55%,#0284c7);color:#fff;border-radius:22px;padding:22px}
+.hero .muted{color:#d1fae5}
+.scanBtn{width:100%;font-size:1.25rem;padding:20px;border-radius:18px;background:var(--emerald);color:#fff;border:0;font-weight:800;cursor:pointer}
+.view{display:none}.view.active{display:block}
+label{font-weight:700;font-size:.92rem;display:block;margin:10px 0 4px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--card);color:var(--text)}
+textarea{min-height:80px}
+.formGrid{display:grid;gap:10px}@media(min-width:700px){.formGrid{grid-template-columns:1fr 1fr}}
+.list{display:grid;gap:10px;margin-top:12px}.item{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--card)}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.tag{font-size:.78rem;font-weight:800;padding:4px 8px;border-radius:999px;background:var(--card2)}
+.warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:14px;padding:12px;font-size:.92rem}
+@media(prefers-color-scheme:dark){.warn{background:#2a2110;color:#fde68a}}
+.demo{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:14px;padding:12px}
+@media(prefers-color-scheme:dark){.demo{background:#12283d;color:#bfdbfe}}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:20}
+nav.bottom .inner{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav button{background:none;border:0;padding:10px 4px 12px;cursor:pointer;color:var(--muted);font-weight:700;font-size:.78rem;min-height:56px}
+nav button.active{color:var(--emerald)} nav button span{display:block;font-size:1.2rem;line-height:1}
+table{width:100%;border-collapse:collapse;font-size:.92rem} th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left} th{color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}.modal.open{display:flex}.modalBox{background:var(--card);border-radius:18px;padding:20px;max-width:520px;width:100%}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#064e3b;color:#fff;padding:12px 16px;border-radius:999px;display:none;z-index:60;font-weight:700}.toast.show{display:block}
+img.preview{width:100%;max-height:320px;object-fit:cover;border-radius:14px}
+@media print{nav.bottom,.noPrint{display:none!important} body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+  <header class="top">
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <!-- Original logo: heart + heartbeat line + AI nodes -->
+      <svg width="58" height="58" viewBox="0 0 64 64" role="img" aria-label="MyHealth AI logo — heart with heartbeat line" style="flex:none;border-radius:14px;box-shadow:var(--shadow)"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#059669"/><stop offset="1" stop-color="#0284c7"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#lg)"/><path d="M32 50S14 39.5 14 26.8C14 19.9 19.3 15 25.6 15c2.7 0 5 1.2 6.4 3 .9-1.1 3.7-3 6.4-3C44.7 15 50 19.9 50 26.8 50 39.5 32 50 32 50Z" fill="#fff"/><polyline points="20,32 28,32 31,24 35,38 38,32 44,32" fill="none" stroke="#059669" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="52" cy="12" r="2.4" fill="#fff"/><circle cx="57" cy="18" r="2" fill="#fff"/><circle cx="51" cy="19" r="1.7" fill="#fff"/><path d="M52 12 57 18M52 12 51 19" stroke="#fff" stroke-width="1.2"/></svg>
+      <div>
+      <div class="eyebrow">Diabetes companion</div>
+      <h1 class="title">MyHealth AI</h1>
+      <p class="sub">Blood sugar, food, medication and walking — in one calm, clear place.</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn secondary small" id="themeBtn">🌙 / ☀️ Theme</button>
+      <span class="pill" id="todayPill"></span>
+    </div>
+  </header>
+
+  <!-- INSTALL / PWA -->
+  <div id="installCard" class="card" style="margin-bottom:14px;border-color:var(--emerald)">
+    <div class="row">
+      <div style="display:flex;gap:12px;align-items:center">
+        <img src="data:image/png;base64,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" alt="MyHealth AI app icon — white heart with heartbeat line on emerald green" width="52" height="52" style="border-radius:12px">
+        <div><h3>Install MyHealth AI</h3><p class="small muted" style="margin:2px 0 0">Add it to your home screen — no App Store or Google Play needed. Where your browser supports it, it opens full-screen without browser bars.</p></div>
+      </div>
+      <button class="btn" id="installBtn">⬇ Install App</button>
+    </div>
+    <div id="iosInstall" style="display:none;margin-top:12px" class="demo"><strong>On iPhone / iPad (Safari):</strong> tap the <strong>Share</strong> button (square with an arrow up), scroll down and tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>. The MyHealth AI heart icon will appear on your home screen.</div>
+    <p class="small muted" id="installHint" style="margin:10px 0 0">On Android / Chrome, tap Install App and accept the browser prompt. If no prompt appears, open your browser menu (⋮) and choose “Install app” / “Add to Home screen”.</p>
+    <p class="small" style="margin:6px 0 0"><span id="netStatus">● Online</span> · <span id="swStatus" class="muted">Checking offline support…</span></p>
+  </div>
+  <div id="installedNote" class="demo" style="display:none;margin-bottom:14px">✓ <strong>MyHealth AI is installed</strong> — you're using the app version. Installation controls are hidden while installed.</div>
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <h2 id="greeting">Hello 👋</h2>
+      <p class="muted" id="heroSub">Set up your profile to personalise your targets. Targets should come from your healthcare provider.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn" style="background:#fff;color:#065f46" onclick="go('scan')">📷 Scan My Food</button>
+        <button class="btn secondary" onclick="go('log');document.getElementById('glucoseValue').focus()">+ Add blood sugar</button>
+        <button class="btn secondary" onclick="loadDemoDay()">Load a demo day to try it</button>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="card stat"><div class="muted">Latest blood sugar</div><b id="statGlucose">—</b><div class="small muted" id="statGlucoseNote">No reading today yet</div></div>
+      <div class="card stat"><div class="muted">Calories today</div><b id="statCal">0</b><div class="small muted" id="statCalNote"></div><div class="progress"><div class="bar" id="barCal" style="width:0%"></div></div></div>
+      <div class="card stat"><div class="muted">Carbs today</div><b id="statCarbs">0 g</b><div class="small muted" id="statCarbsNote"></div><div class="progress"><div class="bar" id="barCarbs" style="width:0%"></div></div></div>
+      <div class="card stat"><div class="muted">Walking today</div><b id="statSteps">0 steps</b><div class="small muted" id="statWalkNote">0 km</div><div class="progress"><div class="bar" id="barWalk" style="width:0%"></div></div></div>
+    </div>
+
+    <div class="cols" style="margin-top:14px">
+      <div class="card">
+        <div class="row"><h3>Today's blood sugar</h3><span class="tag" id="targetTag">Target not set</span></div>
+        <div id="glucoseChart"></div>
+        <div id="todayGlucoseList" class="list"></div>
+      </div>
+      <div>
+        <div class="card">
+          <h3>Medication today</h3>
+          <div id="medToday" class="list"></div>
+          <p class="small muted">Tap Taken or Missed for each dose. This app never recommends medication or dosage changes — always follow your prescriber.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Today's meals</h3>
+          <div id="todayMeals" class="list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>This week at a glance</h3>
+      <div id="weekChart"></div>
+    </div>
+  </section>
+
+  <!-- SCANNER -->
+  <section class="view" id="view-scan">
+    <div class="demo"><strong>Demo mode — AI vision not connected.</strong> No photo leaves your device in demo mode. A real AI service would need a secure server endpoint (no API keys in this page) and your permission before any photo is sent.</div>
+    <div class="card" style="margin-top:14px">
+      <h2>AI Food Scanner</h2>
+      <p class="muted">Take a photo or upload one. In demo mode you'll review and edit an example plate — including Persian &amp; Middle Eastern foods — before saving.</p>
+      <button class="scanBtn" id="scanBtn">📷 Scan My Food</button>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+      <div style="display:grid;gap:8px;margin-top:10px">
+        <button class="btn secondary" id="uploadBtn">Upload a photo instead</button>
+        <button class="btn ghost" id="noPhotoBtn">Try without a photo — build a meal manually</button>
+      </div>
+      <div id="previewWrap" style="margin-top:14px"></div>
+      <div class="warn" style="margin-top:14px">⚠️ Nutrition from a photo is an <strong>estimate only</strong>. Do <strong>not</strong> use it to determine insulin dosage. Check labels and your care team's guidance.</div>
+    </div>
+
+    <div class="card" id="scanResult" style="margin-top:14px;display:none">
+      <h3>Review &amp; correct your meal</h3>
+      <p class="small muted">Adjust portions (grams) — nutrition updates automatically from the food database. You can also type over any value.</p>
+      <label>Meal name</label><input id="mealName" value="Scanned meal">
+      <label>Add a food</label>
+      <div class="row"><select id="foodPicker" style="flex:1"></select><button class="btn small" id="addFoodBtn">+ Add food</button></div>
+      <div id="scanItems" class="list"></div>
+      <div class="card" style="background:var(--card2);margin-top:12px"><h3>Meal totals</h3><p id="mealTotals" style="font-weight:700"></p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn" id="saveMealBtn">✓ Save meal to today</button>
+        <button class="btn secondary" id="clearScanBtn">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section class="view" id="view-log">
+    <div class="cols">
+      <div class="card">
+        <h3 id="glucoseFormTitle">Add blood sugar</h3>
+        <form id="glucoseForm">
+          <div class="formGrid">
+            <div><label>Reading *</label><input type="number" step="0.1" id="glucoseValue" required placeholder="e.g. 6.2"></div>
+            <div><label>Unit</label><select id="glucoseUnit"><option value="mmol">mmol/L</option><option value="mgdl">mg/dL</option></select></div>
+            <div><label>When</label><select id="glucoseTag"><option>Fasting</option><option>Before meal</option><option>After meal</option><option>Bedtime</option></select></div>
+            <div><label>Date &amp; time *</label><input type="datetime-local" id="glucoseTime" required></div>
+          </div>
+          <label>Note (optional)</label><input id="glucoseNote" placeholder="e.g. after lunch walk">
+          <div style="margin-top:12px;display:flex;gap:8px"><button class="btn" type="submit">Save reading</button><button class="btn secondary" type="button" id="cancelGlucoseEdit" style="display:none">Cancel edit</button></div>
+          <p class="small" id="glucoseErr" style="color:var(--red)"></p>
+        </form>
+        <div id="glucoseHistory" class="list"></div>
+      </div>
+      <div>
+        <div class="card">
+          <h3>Add medication</h3>
+          <form id="medForm">
+            <label>Medication name *</label><input id="medName" required placeholder="e.g. Metformin">
+            <div class="formGrid"><div><label>Prescribed dose *</label><input id="medDose" required placeholder="e.g. 500 mg"></div><div><label>Time(s) — comma separated</label><input id="medTimes" placeholder="08:00, 20:00"></div></div>
+            <label>Notes</label><input id="medNotes" placeholder="e.g. with food, as prescribed">
+            <button class="btn" style="margin-top:12px" type="submit">Add medication</button>
+            <p class="small" id="medErr" style="color:var(--red)"></p>
+          </form>
+          <div style="margin-top:10px"><button class="btn secondary small" id="notifyBtn">🔔 Enable dose reminders (where supported)</button> <span class="small muted" id="notifyStatus"></span></div>
+          <div id="medList" class="list"></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Log walking / activity</h3>
+          <form id="activityForm">
+            <div class="formGrid">
+              <div><label>Date *</label><input type="date" id="actDate" required></div>
+              <div><label>Steps</label><input type="number" min="0" id="actSteps" placeholder="6500"></div>
+              <div><label>Distance (km)</label><input type="number" step="0.1" min="0" id="actKm" placeholder="3.0"></div>
+              <div><label>Duration (minutes)</label><input type="number" min="0" id="actMins" placeholder="40"></div>
+            </div>
+            <label>Activity</label><input id="actType" value="Walking">
+            <button class="btn" style="margin-top:12px" type="submit">Save activity</button>
+            <p class="small muted">If you enter steps but no distance, distance is estimated at ~0.75 m per step.</p>
+          </form>
+          <div id="activityList" class="list"></div>
+          <p class="small muted" style="margin-top:10px">Coming soon: Samsung Health, Google Health Connect &amp; Apple Health sync. For now, enter steps manually or from your health app.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORTS -->
+  <section class="view" id="view-report">
+    <div class="card" id="reportCard">
+      <div class="row"><div><h2>Weekly Health Report</h2><p class="muted" id="reportRange"></p></div><span class="pill">For you &amp; your doctor</span></div>
+      <div class="grid" style="margin-top:12px">
+        <div class="stat"><div class="muted">Avg blood sugar</div><b id="rAvg">—</b></div>
+        <div class="stat"><div class="muted">Readings (7 days)</div><b id="rCount">0</b></div>
+        <div class="stat"><div class="muted">Medication taken</div><b id="rMeds">—</b></div>
+        <div class="stat"><div class="muted">Walking (7 days)</div><b id="rWalk">0 km</b></div>
+      </div>
+      <div style="overflow-x:auto"><table id="reportTable"><thead><tr><th>Day</th><th>Avg sugar</th><th>Calories</th><th>Carbs</th><th>Steps</th><th>Distance</th></tr></thead><tbody></tbody></table></div>
+      <h3 style="margin-top:16px">Medication history (this week)</h3><div id="reportMeds" class="list"></div>
+      <label>Personal health notes for your doctor</label><textarea id="reportNotes" placeholder="e.g. Felt tired after lunch on Tuesday; morning readings higher this week…"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px" class="noPrint">
+      <button class="btn" id="downloadReportBtn">⬇ Download report (.html for printing / PDF)</button>
+      <button class="btn blue" id="exportBtn">Export all my data (JSON)</button>
+      <label class="btn secondary" style="display:inline-flex;align-items:center;cursor:pointer">Import data<input type="file" id="importFile" accept=".json" style="display:none"></label>
+      <button class="btn danger" id="deleteAllBtn">Delete all my data</button>
+    </div>
+    <p class="small muted">Tip: open the downloaded report in your browser and choose Print → Save as PDF to share it with your doctor.</p>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="view" id="view-profile">
+    <div class="card">
+      <h2>Personal Health Card</h2>
+      <p class="muted">Edit anytime. Set blood sugar, calorie and carb targets <strong>only</strong> as recommended by your healthcare provider.</p>
+      <form id="profileForm">
+        <div class="formGrid">
+          <div><label>Full name</label><input id="pName" placeholder="Your name"></div>
+          <div><label>Age</label><input type="number" min="1" max="120" id="pAge"></div>
+          <div><label>Height (cm)</label><input type="number" step="0.1" id="pHeight"></div>
+          <div><label>Weight (kg)</label><input type="number" step="0.1" id="pWeight"></div>
+          <div><label>Diabetes type</label><select id="pType"><option value="">Select…</option><option>Type 1</option><option>Type 2</option><option>Gestational</option><option>Prediabetes</option><option>Other / not sure</option></select></div>
+          <div><label>Preferred glucose unit</label><select id="pUnit"><option value="mmol">mmol/L</option><option value="mgdl">mg/dL</option></select></div>
+          <div><label>Target low (mmol/L)</label><input type="number" step="0.1" id="pLow" placeholder="e.g. 4.0"></div>
+          <div><label>Target high (mmol/L)</label><input type="number" step="0.1" id="pHigh" placeholder="e.g. 7.0"></div>
+          <div><label>Daily calorie target (kcal)</label><input type="number" id="pCal" placeholder="e.g. 1800"></div>
+          <div><label>Carb limit per meal (g)</label><input type="number" id="pCarbMeal" placeholder="e.g. 45"></div>
+          <div><label>Daily walking goal (km)</label><input type="number" step="0.1" id="pWalk" placeholder="e.g. 3"></div>
+          <div><label>BMI (calculated)</label><input id="pBmi" disabled></div>
+        </div>
+        <button class="btn" style="margin-top:14px" type="submit">Save profile</button>
+      </form>
+    </div>
+    <div class="cols" style="margin-top:14px">
+      <div class="card"><h3>Health app connections</h3><p>🔹 Samsung Health — <strong>Not connected yet</strong></p><p>🔹 Google Health Connect — <strong>Not connected yet</strong></p><p>🔹 Apple Health — <strong>Not connected yet</strong></p><p class="small muted">These integrations need a native app / secure backend and your permission. They're prepared for here, not active in this web version.</p></div>
+      <div class="card"><h3>App installation (PWA)</h3><p class="small">This app ships a web app manifest (<em>manifest.webmanifest</em>), a service worker file, and custom icons — 192×192, 512×512, maskable 512×512, Apple Touch Icon (180×180) and favicon — all with the heart + heartbeat logo in emerald, white and soft blue. Use the <strong>Install App</strong> card at the top; controls hide automatically once installed / in standalone mode.</p><p class="small muted">Real AI food analysis and health-app sync (Samsung Health, Google Health Connect, Apple Health) still need a secure server endpoint with the API key held server-side — never in this page. The food scanner therefore runs in a clearly labelled demo mode with manual entry, and photographs are never sent anywhere until you give permission. This hosted version saves your records on this device automatically and works offline for manual tracking once installed.</div>
+      <div class="card"><h3>AI Food Scanner status</h3><p><strong>Demo mode</strong> — no AI service connected, no photo is sent anywhere.</p><p class="small muted">To activate real AI: a secure server endpoint must be added by the app owner, it will ask your permission before sending any photo, and API keys must stay on the server — never in this page.</p><h3 style="margin-top:14px">Your data in this version</h3><p class="small muted">Your records are saved automatically on this device and stay after you close or refresh the app. Use <strong>Reports → Export all my data</strong> to keep a backup file you control, and Import to restore it. Delete all data anytime from Reports.</p></div>
+    </div>
+  </section>
+
+  <p class="small muted" style="margin-top:18px">MyHealth AI helps you record and review your own information. It does not diagnose, treat, or recommend medication or dosage changes. Always follow your healthcare provider's advice. Nutrition from photos is an estimate — never use it to determine insulin dosage.</p>
+</div>
+
+<nav class="bottom"><div class="inner">
+  <button data-go="home" class="active"><span>🏠</span>Home</button>
+  <button data-go="scan"><span>📷</span>Food Scanner</button>
+  <button data-go="log"><span>📖</span>Health Log</button>
+  <button data-go="report"><span>📊</span>Reports</button>
+  <button data-go="profile"><span>👤</span>Profile</button>
+</div></nav>
+
+<div class="modal" id="consentModal"><div class="modalBox">
+  <h3>Before scanning</h3>
+  <p id="consentText">Demo mode: your photo stays on your device and is only shown as a preview. No image is sent to an external AI service.</p>
+  <p class="small muted">If a real AI service is connected later, you'll be asked again before any photo is sent.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="consentOk">Continue in demo mode</button><button class="btn secondary" id="consentCancel">Cancel</button></div>
+</div></div>
+
+<div class="modal" id="deleteModal"><div class="modalBox">
+  <h3 id="deleteTitle">Are you sure?</h3><p id="deleteText" class="muted"></p>
+  <div style="display:flex;gap:8px"><button class="btn danger" id="deleteYes">Yes, delete</button><button class="btn secondary" id="deleteNo">Cancel</button></div>
+</div></div>
+
+<script>
+var FOOD_DB=[
+ {name:"Basmati rice, cooked",per:150,cal:195,carbs:42,net:41,sugar:0,protein:4,fat:1,fibre:1},
+ {name:"Tahdig (crispy rice)",per:80,cal:210,carbs:28,net:27,sugar:0,protein:3,fat:9,fibre:1},
+ {name:"Chicken kebab (joojeh)",per:150,cal:240,carbs:2,net:2,sugar:1,protein:32,fat:11,fibre:0},
+ {name:"Beef koobideh kebab",per:150,cal:320,carbs:3,net:3,sugar:1,protein:24,fat:23,fibre:0},
+ {name:"Ghormeh sabzi (herb stew)",per:200,cal:260,carbs:14,net:9,sugar:3,protein:16,fat:15,fibre:5},
+ {name:"Fesenjan (walnut & pomegranate stew)",per:200,cal:380,carbs:18,net:15,sugar:12,protein:18,fat:26,fibre:3},
+ {name:"Roasted potatoes",per:150,cal:165,carbs:30,net:27,sugar:1,protein:3,fat:3,fibre:3},
+ {name:"Pasta, cooked",per:180,cal:280,carbs:52,net:49,sugar:2,protein:10,fat:2,fibre:3},
+ {name:"Barbari bread",per:60,cal:165,carbs:30,net:28,sugar:1,protein:5,fat:2,fibre:2},
+ {name:"Sangak bread",per:60,cal:150,carbs:29,net:26,sugar:0,protein:5,fat:1,fibre:3},
+ {name:"Salad Shirazi",per:120,cal:45,carbs:7,net:5,sugar:4,protein:1,fat:1,fibre:2},
+ {name:"Plain yogurt",per:150,cal:95,carbs:7,net:7,sugar:7,protein:8,fat:3,fibre:0},
+ {name:"Adasi (lentil soup)",per:250,cal:210,carbs:30,net:20,sugar:2,protein:13,fat:3,fibre:10},
+ {name:"Grilled tomatoes",per:100,cal:22,carbs:4,net:3,sugar:3,protein:1,fat:0,fibre:1},
+ {name:"Mixed green salad",per:100,cal:30,carbs:4,net:2,sugar:2,protein:1,fat:1,fibre:2},
+ {name:"Hummus",per:80,cal:210,carbs:16,net:11,sugar:1,protein:6,fat:13,fibre:5}
+];
+var state={profile:{name:"",age:"",height:"",weight:"",type:"",unit:"mmol",low:"",high:"",cal:"",carbMeal:"",walkKm:3},glucose:[],meds:[],medLogs:[],meals:[],activities:[],notes:""};
+var editingGlucose=null, scanItems=[], pendingDelete=null;
+function $(id){return document.getElementById(id)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function todayKey(d){d=d||new Date();return d.toISOString().slice(0,10)}
+function fmtDate(k){return new Date(k+"T12:00:00").toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2600)}
+function go(v){document.querySelectorAll('.view').forEach(function(e){e.classList.remove('active')});$('view-'+v).classList.add('active');document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('active',b.dataset.go===v)});window.scrollTo(0,0);renderAll()}
+document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
+$('themeBtn').onclick=function(){var h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark'};
+$('todayPill').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+
+function toMmol(v,unit){return unit==='mgdl'? Math.round(v/18*10)/10 : v}
+function fromMmol(v){return state.profile.unit==='mgdl'? Math.round(v*18) : Math.round(v*10)/10}
+function unitLabel(){return state.profile.unit==='mgdl'?'mg/dL':'mmol/L'}
+
+function dayActivities(k){return state.activities.filter(function(a){return a.date===k})}
+function dayMeals(k){return state.meals.filter(function(m){return m.date===k})}
+function totalsFor(k){var cal=0,carbs=0;dayMeals(k).forEach(function(m){cal+=+m.totals.cal||0;carbs+=+m.totals.carbs||0});var steps=0,km=0,mins=0;dayActivities(k).forEach(function(a){steps+=+a.steps||0;km+=+a.km||0;mins+=+a.mins||0});return{cal:cal,carbs:carbs,steps:steps,km:km,mins:mins}}
+
+function renderAll(){renderHome();renderLog();renderReport();renderScanPicker()}
+function renderHome(){
+ var k=todayKey(), p=state.profile;
+ $('greeting').textContent=p.name?('Hello, '+p.name.split(' ')[0]+' 👋'):'Hello 👋';
+ $('heroSub').textContent=p.type? (p.type+' • Walking goal '+(p.walkKm||3)+' km/day • Targets as advised by your provider') : 'Set up your profile to personalise your targets. Targets should come from your healthcare provider.';
+ var tg=state.glucose.filter(function(g){return todayKey(new Date(g.time))===k}).sort(function(a,b){return new Date(a.time)-new Date(b.time)});
+ var latest=tg[tg.length-1];
+ $('statGlucose').textContent=latest? fromMmol(latest.mmol)+' '+unitLabel() : '—';
+ $('statGlucoseNote').textContent=latest? (latest.tag+' • '+new Date(latest.time).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})) : 'No reading today yet';
+ $('targetTag').textContent=(p.low&&p.high)?('Your target: '+p.low+'–'+p.high+' mmol/L'):'Target not set';
+ var t=totalsFor(k);
+ $('statCal').textContent=t.cal+' kcal'; $('statCalNote').textContent=p.cal?('of '+p.cal+' kcal • '+(+p.cal-t.cal)+' left'):'No calorie target set';
+ $('barCal').style.width=p.cal?Math.min(100,t.cal/+p.cal*100)+'%':'0%';
+ $('statCarbs').textContent=t.carbs+' g'; var carbDay=p.carbMeal? +p.carbMeal*3 : 0;
+ $('statCarbsNote').textContent=carbDay?('Meal limit '+p.carbMeal+' g • approx. day guide '+carbDay+' g'):'Set a per-meal carb limit in Profile';
+ $('barCarbs').style.width=carbDay?Math.min(100,t.carbs/carbDay*100)+'%':'0%';
+ $('statSteps').textContent=t.steps.toLocaleString()+' steps'; $('statWalkNote').textContent=t.km.toFixed(1)+' km of '+(p.walkKm||3)+' km goal • '+t.mins+' min';
+ $('barWalk').style.width=Math.min(100,t.km/(+p.walkKm||3)*100)+'%';
+ $('glucoseChart').innerHTML=lineChart(tg);
+ $('todayGlucoseList').innerHTML=tg.length? tg.map(function(g){return '<div class="item row"><span><strong>'+fromMmol(g.mmol)+' '+unitLabel()+'</strong> <span class="tag">'+g.tag+'</span></span><span class="muted small">'+new Date(g.time).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+'</span></div>'}).join('') : '<p class="muted">No readings today. Add your first one in Health Log.</p>';
+ // meds today
+ var html='';
+ if(!state.meds.length) html='<p class="muted">No medications added yet. Add them in Health Log.</p>';
+ state.meds.forEach(function(m){(m.times&&m.times.length?m.times:['Once daily']).forEach(function(tm){var log=state.medLogs.find(function(l){return l.medId===m.id&&l.date===k&&l.slot===tm});html+='<div class="item"><div class="row"><strong>'+esc(m.name)+' — '+esc(m.dose)+'</strong><span class="tag">'+esc(tm)+'</span></div>'+(log?'<p class="small" style="margin:6px 0">Status: <strong>'+log.status+'</strong></p>':'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn small" onclick="markMed(\''+m.id+'\',\''+tm+'\',\'Taken\')">✓ Taken</button><button class="btn secondary small" onclick="markMed(\''+m.id+'\',\''+tm+'\',\'Missed\')">Missed</button></div>')+'</div>'})});
+ $('medToday').innerHTML=html;
+ var meals=dayMeals(k); $('todayMeals').innerHTML=meals.length? meals.map(function(m){return '<div class="item"><strong>'+esc(m.name)+'</strong><div class="small muted">'+m.totals.cal+' kcal • '+m.totals.carbs+' g carbs • net '+m.totals.net+' g</div></div>'}).join(''):'<p class="muted">No meals yet today. Try Scan My Food.</p>';
+ // week chart bars calories
+ var bars='',max=1,days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var kk=todayKey(d);var tt=totalsFor(kk);days.push({k:kk,cal:tt.cal});if(tt.cal>max)max=tt.cal}
+ days.forEach(function(d){var h=Math.round(d.cal/max*90);bars+='<div style="flex:1;text-align:center"><div style="height:100px;display:flex;align-items:flex-end;justify-content:center"><div style="width:70%;max-width:44px;height:'+Math.max(4,h)+'px;background:var(--emerald);border-radius:8px 8px 0 0"></div></div><div class="small muted">'+new Date(d.k+'T12:00:00').toLocaleDateString(undefined,{weekday:'short'})+'<br>'+d.cal+' kcal</div></div>'});
+ $('weekChart').innerHTML='<div style="display:flex;gap:8px">'+bars+'</div>';
+}
+function lineChart(readings){
+ if(!readings.length) return '<p class="muted" style="padding:12px 0">Your chart will appear here once you add a reading.</p>';
+ var w=520,h=150,pad=28,max=14,min=0;
+ var pts=readings.map(function(g,i){var x=readings.length===1? w/2 : pad+i*(w-pad*2)/(readings.length-1);var y=h-pad-((g.mmol-min)/(max-min))*(h-pad*2);return x+','+y}).join(' ');
+ var target='';var p=state.profile;if(p.low&&p.high){var y1=h-pad-(p.high/(max))*(h-pad*2),y2=h-pad-(p.low/(max))*(h-pad*2);target='<rect x="'+pad+'" y="'+y1+'" width="'+(w-pad*2)+'" height="'+(y2-y1)+'" fill="#10b981" opacity="0.12"/>'}
+ return '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto" role="img" aria-label="Blood sugar chart">'+target+'<polyline points="'+pts+'" fill="none" stroke="#059669" stroke-width="3" stroke-linejoin="round"/>'+readings.map(function(g,i){var parts=pts.split(' ')[i].split(',');return '<circle cx="'+parts[0]+'" cy="'+parts[1]+'" r="5" fill="#0284c7"><title>'+fromMmol(g.mmol)+' '+unitLabel()+'</title></circle>'}).join('')+'</svg><p class="small muted">Green band = your personal target range, if set. This chart is for your records, not medical advice.</p>';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+window.markMed=function(id,slot,status){var k=todayKey();state.medLogs=state.medLogs.filter(function(l){return !(l.medId===id&&l.date===k&&l.slot===slot)});state.medLogs.push({id:uid(),medId:id,date:k,slot:slot,status:status,at:new Date().toISOString()});toast('Medication marked '+status.toLowerCase());renderAll()};
+
+function renderLog(){
+ var sorted=state.glucose.slice().sort(function(a,b){return new Date(b.time)-new Date(a.time)});
+ $('glucoseHistory').innerHTML=sorted.length? sorted.slice(0,30).map(function(g){return '<div class="item row"><span><strong>'+fromMmol(g.mmol)+' '+unitLabel()+'</strong> <span class="tag">'+esc(g.tag)+'</span><br><span class="small muted">'+new Date(g.time).toLocaleString()+(g.note?' • '+esc(g.note):'')+'</span></span><span style="display:flex;gap:6px"><button class="btn secondary small" onclick="editGlucose(\''+g.id+'\')">Edit</button><button class="btn danger small" onclick="deleteGlucose(\''+g.id+'\')">Delete</button></span></div>'}).join(''):'<p class="muted">No blood sugar entries yet.</p>';
+ $('medList').innerHTML=state.meds.length? state.meds.map(function(m){return '<div class="item row"><span><strong>'+esc(m.name)+'</strong> — '+esc(m.dose)+'<br><span class="small muted">'+(m.times.join(', ')||'Once daily')+(m.notes?' • '+esc(m.notes):'')+'</span></span><button class="btn danger small" onclick="deleteMed(\''+m.id+'\')">Delete</button></div>'}).join(''):'<p class="muted">No medications yet.</p>';
+ var acts=state.activities.slice().sort(function(a,b){return b.date.localeCompare(a.date)});
+ $('activityList').innerHTML=acts.length? acts.slice(0,14).map(function(a){return '<div class="item row"><span><strong>'+esc(a.type)+'</strong> — '+fmtDate(a.date)+'<br><span class="small muted">'+(+a.steps||0).toLocaleString()+' steps • '+(+a.km||0)+' km • '+(+a.mins||0)+' min</span></span><button class="btn danger small" onclick="deleteActivity(\''+a.id+'\')">Delete</button></div>'}).join(''):'<p class="muted">No activity logged yet.</p>';
+}
+window.editGlucose=function(id){var g=state.glucose.find(function(x){return x.id===id});if(!g)return;editingGlucose=id;$('glucoseFormTitle').textContent='Edit blood sugar';$('glucoseValue').value=fromMmol(g.mmol);$('glucoseUnit').value=state.profile.unit;$('glucoseTag').value=g.tag;$('glucoseTime').value=g.time.slice(0,16);$('glucoseNote').value=g.note||'';$('cancelGlucoseEdit').style.display='';window.scrollTo(0,0)};
+window.deleteGlucose=function(id){askDelete('Delete this blood sugar reading?',function(){state.glucose=state.glucose.filter(function(x){return x.id!==id});renderAll();toast('Reading deleted')})};
+window.deleteMed=function(id){askDelete('Delete this medication from your list? Past taken/missed history will stay in reports.',function(){state.meds=state.meds.filter(function(x){return x.id!==id});renderAll()})};
+window.deleteActivity=function(id){askDelete('Delete this activity entry?',function(){state.activities=state.activities.filter(function(x){return x.id!==id});renderAll()})};
+$('cancelGlucoseEdit').onclick=function(){editingGlucose=null;$('glucoseForm').reset();setDefaultTimes();$('glucoseFormTitle').textContent='Add blood sugar';this.style.display='none'};
+
+$('glucoseForm').addEventListener('submit',function(e){e.preventDefault();var v=parseFloat($('glucoseValue').value);if(!v||v<=0){$('glucoseErr').textContent='Please enter a reading above 0.';return}if($('glucoseUnit').value==='mmol'&&(v<1||v>35)){$('glucoseErr').textContent='That looks outside the usual mmol/L range (1–35). Please check it.';return}if($('glucoseUnit').value==='mgdl'&&(v<20||v>600)){$('glucoseErr').textContent='That looks outside the usual mg/dL range (20–600). Please check it.';return}$('glucoseErr').textContent='';var mmol=toMmol(v,$('glucoseUnit').value);var obj={mmol:mmol,tag:$('glucoseTag').value,time:new Date($('glucoseTime').value).toISOString(),note:$('glucoseNote').value.trim()};if(editingGlucose){var g=state.glucose.find(function(x){return x.id===editingGlucose});Object.assign(g,obj);editingGlucose=null;$('glucoseFormTitle').textContent='Add blood sugar';$('cancelGlucoseEdit').style.display='none'}else{obj.id=uid();state.glucose.push(obj)}this.reset();setDefaultTimes();toast('Blood sugar saved');renderAll()});
+$('medForm').addEventListener('submit',function(e){e.preventDefault();var name=$('medName').value.trim(),dose=$('medDose').value.trim();if(!name||!dose){$('medErr').textContent='Medication name and dose are both required.';return}$('medErr').textContent='';var times=$('medTimes').value.split(',').map(function(s){return s.trim()}).filter(Boolean);state.meds.push({id:uid(),name:name,dose:dose,times:times.length?times:['08:00'],notes:$('medNotes').value.trim()});this.reset();toast('Medication added');renderAll()});
+$('activityForm').addEventListener('submit',function(e){e.preventDefault();var steps=parseInt($('actSteps').value||'0',10),km=parseFloat($('actKm').value||'0');if(!km&&steps)km=Math.round(steps*0.00075*10)/10;state.activities.push({id:uid(),date:$('actDate').value,steps:steps,km:km,mins:parseInt($('actMins').value||'0',10),type:$('actType').value||'Walking'});this.reset();$('actDate').value=todayKey();$('actType').value='Walking';toast('Activity saved');renderAll()});
+$('notifyBtn').onclick=function(){if(!('Notification' in window)){$('notifyStatus').textContent='Notifications are not supported in this browser.';return}Notification.requestPermission().then(function(p){$('notifyStatus').textContent=p==='granted'?'Reminders on — we can show a reminder while this page is open.':'Permission not granted.';if(p==='granted')new Notification('MyHealth AI',{body:'Medication reminders are on for this session.'})})};
+
+/* Scanner */
+function renderScanPicker(){var sel=$('foodPicker');if(!sel.options.length){FOOD_DB.forEach(function(f,i){var o=document.createElement('option');o.value=i;o.textContent=f.name+' ('+f.per+' g)';sel.appendChild(o)})}}
+var pendingPhotoAction=null;
+$('scanBtn').onclick=function(){pendingPhotoAction=function(){$('photoInput').click()};$('consentModal').classList.add('open')};
+$('uploadBtn').onclick=function(){pendingPhotoAction=function(){$('photoInput').click()};$('consentModal').classList.add('open')};
+$('consentOk').onclick=function(){$('consentModal').classList.remove('open');if(pendingPhotoAction)pendingPhotoAction()};
+$('consentCancel').onclick=function(){$('consentModal').classList.remove('open');pendingPhotoAction=null};
+$('noPhotoBtn').onclick=function(){startDemoScan(null)};
+$('photoInput').addEventListener('change',function(){var f=this.files[0];if(!f)return;var url=URL.createObjectURL(f);startDemoScan(url)});
+function startDemoScan(url){
+ $('previewWrap').innerHTML=(url?'<img class="preview" src="'+url+'" alt="Your meal photo preview">':'')+'<p class="small muted" style="margin-top:8px">Demo detection: example Persian plate identified below. Edit anything that doesn\'t match your real meal.</p>';
+ scanItems=[makeScanItem(0,200),makeScanItem(1,80),makeScanItem(2,150),makeScanItem(11,120)];
+ $('scanResult').style.display='block';renderScanItems();
+}
+function makeScanItem(idx,grams){var f=FOOD_DB[idx];return{db:idx,name:f.name,grams:grams}}
+function calcItem(it){var f=FOOD_DB[it.db];if(it.manual)return it.manual;var r=it.grams/f.per;return{cal:Math.round(f.cal*r),carbs:Math.round(f.carbs*r),net:Math.round(f.net*r),sugar:Math.round(f.sugar*r),protein:Math.round(f.protein*r),fat:Math.round(f.fat*r),fibre:Math.round(f.fibre*r)}}
+function renderScanItems(){
+ $('scanItems').innerHTML=scanItems.map(function(it,i){var n=calcItem(it);return '<div class="item"><div class="row"><strong>'+esc(it.name)+'</strong><button class="btn danger small" onclick="removeScanItem('+i+')">Remove</button></div><label>Portion (grams)</label><input type="number" min="0" value="'+it.grams+'" onchange="updateGrams('+i+',this.value)"><div class="formGrid" style="margin-top:6px">'+['cal','carbs','net','sugar','protein','fat','fibre'].map(function(key){var label={cal:'Calories',carbs:'Carbs g',net:'Net carbs g',sugar:'Sugar g',protein:'Protein g',fat:'Fat g',fibre:'Fibre g'}[key];return '<div><label>'+label+'</label><input type="number" value="'+n[key]+'" onchange="updateManual('+i+',\''+key+'\',this.value)"></div>'}).join('')+'</div></div>'}).join('');
+ var tot={cal:0,carbs:0,net:0,sugar:0,protein:0,fat:0,fibre:0};scanItems.forEach(function(it){var n=calcItem(it);Object.keys(tot).forEach(function(k){tot[k]+=n[k]})});
+ $('mealTotals').textContent=tot.cal+' kcal • Carbs '+tot.carbs+' g • Net carbs '+tot.net+' g • Sugar '+tot.sugar+' g • Protein '+tot.protein+' g • Fat '+tot.fat+' g • Fibre '+tot.fibre+' g';
+ scanItems._totals=tot;
+}
+window.updateGrams=function(i,v){scanItems[i].grams=+v||0;delete scanItems[i].manual;renderScanItems()};
+window.updateManual=function(i,k,v){var n=calcItem(scanItems[i]);n[k]=+v||0;scanItems[i].manual=n;renderScanItems()};
+window.removeScanItem=function(i){scanItems.splice(i,1);renderScanItems()};
+$('addFoodBtn').onclick=function(){scanItems.push(makeScanItem(+$('foodPicker').value,100));renderScanItems()};
+$('clearScanBtn').onclick=function(){scanItems=[];renderScanItems()};
+$('saveMealBtn').onclick=function(){if(!scanItems.length){toast('Add at least one food first');return}var tot=scanItems._totals||{cal:0,carbs:0,net:0,sugar:0,protein:0,fat:0,fibre:0};state.meals.push({id:uid(),date:todayKey(),name:$('mealName').value||'Meal',items:scanItems.map(function(it){return{name:it.name,grams:it.grams}}),totals:tot});toast('Meal saved to today');go('home')};
+
+/* Profile */
+function fillProfile(){var p=state.profile;$('pName').value=p.name||'';$('pAge').value=p.age||'';$('pHeight').value=p.height||'';$('pWeight').value=p.weight||'';$('pType').value=p.type||'';$('pUnit').value=p.unit||'mmol';$('pLow').value=p.low||'';$('pHigh').value=p.high||'';$('pCal').value=p.cal||'';$('pCarbMeal').value=p.carbMeal||'';$('pWalk').value=p.walkKm||3;updateBmi()}
+function updateBmi(){var h=+$('pHeight').value,w=+$('pWeight').value;$('pBmi').value=(h&&w)?(Math.round(w/Math.pow(h/100,2)*10)/10):''}
+$('pHeight').addEventListener('input',updateBmi);$('pWeight').addEventListener('input',updateBmi);
+$('profileForm').addEventListener('submit',function(e){e.preventDefault();state.profile={name:$('pName').value.trim(),age:$('pAge').value,height:$('pHeight').value,weight:$('pWeight').value,type:$('pType').value,unit:$('pUnit').value,low:$('pLow').value,high:$('pHigh').value,cal:$('pCal').value,carbMeal:$('pCarbMeal').value,walkKm:$('pWalk').value||3};$('glucoseUnit').value=state.profile.unit;toast('Profile saved');renderAll();go('home')});
+
+/* Report */
+function renderReport(){
+ var days=[];for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(todayKey(d))}
+ $('reportRange').textContent=fmtDate(days[0])+' – '+fmtDate(days[6]);
+ var weekG=state.glucose.filter(function(g){return days.indexOf(todayKey(new Date(g.time)))>=0});
+ var avg=weekG.length? weekG.reduce(function(s,g){return s+g.mmol},0)/weekG.length : null;
+ $('rAvg').textContent=avg? fromMmol(Math.round(avg*10)/10)+' '+unitLabel() : '—'; $('rCount').textContent=weekG.length;
+ var taken=state.medLogs.filter(function(l){return days.indexOf(l.date)>=0&&l.status==='Taken'}).length;var totalLogs=state.medLogs.filter(function(l){return days.indexOf(l.date)>=0}).length;
+ $('rMeds').textContent=totalLogs? taken+' / '+totalLogs+' taken':'—';
+ var wk=0;days.forEach(function(k){wk+=totalsFor(k).km});$('rWalk').textContent=wk.toFixed(1)+' km';
+ var tb=document.querySelector('#reportTable tbody');tb.innerHTML=days.map(function(k){var gs=state.glucose.filter(function(g){return todayKey(new Date(g.time))===k});var a=gs.length?fromMmol(Math.round(gs.reduce(function(s,g){return s+g.mmol},0)/gs.length*10)/10)+' '+unitLabel():'—';var t=totalsFor(k);return '<tr><td>'+fmtDate(k)+'</td><td>'+a+'</td><td>'+t.cal+'</td><td>'+t.carbs+' g</td><td>'+t.steps.toLocaleString()+'</td><td>'+t.km.toFixed(1)+' km</td></tr>'}).join('');
+ $('reportMeds').innerHTML=totalLogs? state.medLogs.filter(function(l){return days.indexOf(l.date)>=0}).map(function(l){var m=state.meds.find(function(x){return x.id===l.medId});return '<div class="item row"><span>'+(m?esc(m.name)+' '+esc(m.dose):'Medication')+' • '+esc(l.slot)+'</span><span class="tag">'+l.status+' • '+fmtDate(l.date)+'</span></div>'}).join(''):'<p class="muted">No medication doses marked this week.</p>';
+ if(document.activeElement!==$('reportNotes'))$('reportNotes').value=state.notes||'';
+}
+$('reportNotes').addEventListener('input',function(){state.notes=this.value});
+$('downloadReportBtn').onclick=function(){
+ var html='<!doctype html><html><head><meta charset="utf-8"><title>Weekly Health Report</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:24px auto;padding:0 16px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ddd;padding:8px;text-align:left}</style></head><body>'+$('reportCard').innerHTML+'<p>Generated by MyHealth AI. Estimates only — not medical advice. Do not use photo nutrition estimates to determine insulin dosage.</p>
+<script>
+/* GitHub Pages: durable on-device persistence (localStorage). Records stay after refresh. */
+(function(){
+  var KEY='myhealth-ai-v1';
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){ var s = JSON.parse(raw); if(s && typeof s==='object'){ for(var k in s){ if(k in state) state[k]=s[k]; } } }
+  }catch(e){}
+  var origRender = renderAll;
+  renderAll = function(){ origRender(); save(); };
+  var notesEl = document.getElementById('reportNotes');
+  if(notesEl) notesEl.addEventListener('input', save);
+  renderAll();
+})();
+</script>
+</body></html>';
+ var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='MyHealth-Weekly-Report.html';a.click();toast('Report downloaded — open it and Print → Save as PDF');
+};
+$('exportBtn').onclick=function(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='myhealth-ai-backup.json';a.click();toast('Backup downloaded')};
+$('importFile').addEventListener('change',function(){var f=this.files[0];if(!f)return;f.text().then(function(txt){try{var data=JSON.parse(txt);if(!data.profile)throw 0;state=data;fillProfile();renderAll();toast('Data imported')}catch(e){toast('That file could not be imported')}})});
+$('deleteAllBtn').onclick=function(){askDelete('Delete ALL your health data in this session? Export a backup first if you want to keep it.',function(){state={profile:state.profile,glucose:[],meds:[],medLogs:[],meals:[],activities:[],notes:""};renderAll();toast('All records deleted')})};
+
+/* Confirm modal */
+function askDelete(text,fn){$('deleteText').textContent=text;pendingDelete=fn;$('deleteModal').classList.add('open')}
+$('deleteYes').onclick=function(){$('deleteModal').classList.remove('open');if(pendingDelete)pendingDelete()};
+$('deleteNo').onclick=function(){$('deleteModal').classList.remove('open');pendingDelete=null};
+
+/* Demo day for testing (Section 10) */
+window.loadDemoDay=function(){
+ var k=todayKey();var now=new Date();var t1=new Date(now);t1.setHours(7,30,0,0);
+ if(!state.glucose.length)state.glucose.push({id:uid(),mmol:5.6,tag:'Fasting',time:t1.toISOString(),note:'Demo reading'});
+ if(!state.meds.length)state.meds.push({id:uid(),name:'Metformin (demo)',dose:'500 mg',times:['08:00','20:00'],notes:'Demo entry — replace with your prescribed medication'});
+ if(!dayMeals(k).length)state.meals.push({id:uid(),date:k,name:'Persian lunch (demo)',items:[{name:'Basmati rice, cooked',grams:200},{name:'Chicken kebab (joojeh)',grams:150}],totals:{cal:500,carbs:58,net:56,sugar:2,protein:40,fat:12,fibre:2}});
+ if(!dayActivities(k).length)state.activities.push({id:uid(),date:k,steps:6500,km:4.9,mins:45,type:'Walking'});
+ toast('Demo day loaded — check Home & Reports');renderAll();
+};
+function setDefaultTimes(){var n=new Date();n.setSeconds(0,0);$('glucoseTime').value=n.toISOString().slice(0,16);$('actDate').value=todayKey();$('glucoseUnit').value=state.profile.unit}
+setDefaultTimes();fillProfile();renderAll();
+</script>
+<script>
+/* ---- PWA: install prompt, standalone detection, service worker ---- */
+var deferredInstall=null;
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
+function refreshInstallUI(){
+  var installed=isStandalone();
+  var card=document.getElementById('installCard'), note=document.getElementById('installedNote');
+  if(installed){ if(card)card.style.display='none'; if(note)note.style.display='block'; }
+  else{ if(card)card.style.display=''; if(note)note.style.display='none';
+    var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    document.getElementById('iosInstall').style.display=isIOS?'block':'none';
+    if(isIOS)document.getElementById('installBtn').style.display='none';
+  }
+}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstall=e;refreshInstallUI();});
+window.addEventListener('appinstalled',function(){deferredInstall=null;refreshInstallUI();toast('MyHealth AI installed — find the heart icon on your home screen');});
+document.getElementById('installBtn').addEventListener('click',function(){
+  if(deferredInstall){deferredInstall['prompt']();deferredInstall.userChoice.then(function(){deferredInstall=null;});}
+  else{var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);document.getElementById('iosInstall').style.display='block';toast(isIOS?'Follow the Safari steps below the button':'Use your browser menu: Install app / Add to Home screen');}
+});
+function refreshNet(){var el=document.getElementById('netStatus');if(el)el.textContent=navigator.onLine?'● Online':'● Offline — you can keep viewing this loaded page; real AI scanning needs internet';}
+window.addEventListener('online',refreshNet);window.addEventListener('offline',refreshNet);refreshNet();refreshInstallUI();
+if('serviceWorker' in navigator){
+  // This static build can only serve files from assets/, so the worker's scope is that folder and it cannot control the main page — full root-scope offline/install support needs the app hosted with sw.js at the site root. Status below reflects that honestly.
+  navigator.serviceWorker.register('./sw.js').then(function(reg){var controlled=!!navigator.serviceWorker.controller;document.getElementById('swStatus').textContent=controlled?'Offline support active for this page':'Service worker registered — reload once for full offline support';}).catch(function(){document.getElementById('swStatus').textContent='Service worker unavailable in this browser/host';});
+}else{document.getElementById('swStatus').textContent='Service workers not supported in this browser';}
+</script>
+</body>
+</html>
